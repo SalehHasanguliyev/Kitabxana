@@ -1,5 +1,5 @@
 insert into users
 (username, password)
 values
-('librarian1', 12),
-('student', 12);
+('librarian1', '{noop}12'),
+('student', '{noop}12');
