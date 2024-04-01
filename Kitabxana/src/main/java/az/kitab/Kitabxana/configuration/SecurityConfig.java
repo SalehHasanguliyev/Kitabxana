@@ -22,47 +22,43 @@ import org.springframework.security.web.SecurityFilterChain;
 @EnableMethodSecurity(prePostEnabled = true)
 
 public class SecurityConfig {
-
+	
 	@Autowired
-	private DataSource dataSource;
-
+     private DataSource dataSource;
+	
 	@Bean
 	public UserDetailsService userDetailsService() {
-		JdbcDaoImpl jdbcDaoImpl = new JdbcDaoImpl();
-		jdbcDaoImpl.setDataSource(dataSource);
-		return jdbcDaoImpl;
+		JdbcDaoImpl daoImpl = new JdbcDaoImpl();
+		daoImpl.setDataSource(dataSource);
+		return daoImpl;
 	}
 
 	@Bean
 	public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
-		return http.csrf().disable().authorizeRequests()
-				.requestMatchers("/").permitAll()
-				.requestMatchers("/h2-console/**").permitAll()
-				.anyRequest().authenticated().and().httpBasic().and().build();
+	    return http.csrf().disable()
+	        .authorizeRequests()
+	        .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
+	        .requestMatchers("/h2-console/**").permitAll()
+	        .requestMatchers("/users/**").permitAll()
+	        .anyRequest().authenticated()
+	        .and()
+	        .httpBasic()
+	        .and()
+	        .headers().frameOptions().disable() // Burada frameOptions'ı devre dışı bırakıyoruz
+	        .and()
+	        .build();
+	}
+	
+	@Bean
+	public PasswordEncoder passwordEncoder() {
+		return new BCryptPasswordEncoder();
 	}
 	
 	@Bean
 	public AuthenticationProvider authenticationProvider() {
-		DaoAuthenticationProvider authProvider = new DaoAuthenticationProvider();
-		authProvider.setUserDetailsService(userDetailsService());
-		 authProvider.setPasswordEncoder(passwordEncoder());
-		return authProvider;
+		DaoAuthenticationProvider provider = new DaoAuthenticationProvider();
+		provider.setUserDetailsService(userDetailsService());
+		provider.setPasswordEncoder(passwordEncoder());
+		return provider;
 	}
-
-	@Bean
-    public PasswordEncoder passwordEncoder() {
-        return new BCryptPasswordEncoder();
-    }
-
 }
-
-
-
-
-
-
-
-
-
-
-
